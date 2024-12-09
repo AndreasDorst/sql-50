@@ -1,7 +1,10 @@
 # Virtual Environment
+.venv
 venv/
-.venv/
+
+# Jupyter
 .ipynb_checkpoints
+ipynb_checkpoints/
 
 # Data Bases
 *.db-journal
