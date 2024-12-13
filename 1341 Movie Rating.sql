@@ -114,4 +114,80 @@ insert into MovieRating (movie_id, user_id, rating, created_at) values ('2', '3'
 insert into MovieRating (movie_id, user_id, rating, created_at) values ('3', '1', '3', '2020-02-22');
 insert into MovieRating (movie_id, user_id, rating, created_at) values ('3', '2', '4', '2020-02-25');
 
--- Query
+-- Query1
+select
+	name,
+	count(rating) as rating_count	
+from Users
+join MovieRating using(user_id)
+group by name
+order by rating_count desc, name;
+
+-- Query2
+select 
+	title,
+	avg(rating) as avg_rating
+from Movies
+join MovieRating using(movie_id)
+where  created_at between '2020-02-01' and '2020-02-29'
+group by title
+order by avg_rating desc, title;
+
+-- Main Query
+with RatingCount as (
+	select
+		name,
+		count(rating) as rating_count	
+	from Users
+	join MovieRating using(user_id)
+	group by name
+	order by rating_count desc, name
+), AverageRating as (
+	select 
+		title,
+		avg(rating) as avg_rating
+	from Movies
+	join MovieRating using(movie_id)
+	where  created_at between '2020-02-01' and '2020-02-29'
+	group by title
+	order by avg_rating desc, title
+)
+select name as results
+from RatingCount
+where name = (select name from RatingCount limit 1)
+union all
+select title as results
+from AverageRating
+where title = (select title from AverageRating limit 1);
+
+
+-- Another solution (not all databases support this syntax)
+
+-- Query 1
+select name
+from Users
+join MovieRating using(user_id)
+group by name
+order by count(0) desc, name limit 1;
+
+-- Query 2
+select title
+from Movies
+join MovieRating using(movie_id)
+where year(created_at) = 2020 and month(created_at) = 2
+group by title
+order by avg(rating) desc, title limit 1;
+
+-- Union queries
+(select name
+from Users
+join MovieRating using(user_id)
+group by name
+order by count(0) desc, name limit 1)
+union all
+(select title
+from Movies
+join MovieRating using(movie_id)
+where year(created_at) = 2020 and month(created_at) = 2
+group by title
+order by avg(rating) desc, title limit 1);
