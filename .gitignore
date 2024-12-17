@@ -8,3 +8,4 @@ ipynb_checkpoints/
 
 # Data Bases
 *.db-journal
+example.db

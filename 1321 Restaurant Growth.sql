@@ -64,7 +64,7 @@ Explanation:
 
 -- Create table Customer
 Create table If Not Exists Customer (customer_id int, name varchar(20), visited_on date, amount int);
-Truncate table Customer;
+delete from Customer;
 insert into Customer (customer_id, name, visited_on, amount) values ('1', 'Jhon', '2019-01-01', '100');
 insert into Customer (customer_id, name, visited_on, amount) values ('2', 'Daniel', '2019-01-02', '110');
 insert into Customer (customer_id, name, visited_on, amount) values ('3', 'Jade', '2019-01-03', '120');
