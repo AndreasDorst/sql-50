@@ -1,3 +1,4 @@
+-- Active: 1734421996155@@127.0.0.1@5432@mydatabase
 /*
 Table: Customer
 
@@ -63,7 +64,7 @@ Explanation:
 
 -- Create table Customer
 Create table If Not Exists Customer (customer_id int, name varchar(20), visited_on date, amount int);
-Delete from Customer;
+Truncate table Customer;
 insert into Customer (customer_id, name, visited_on, amount) values ('1', 'Jhon', '2019-01-01', '100');
 insert into Customer (customer_id, name, visited_on, amount) values ('2', 'Daniel', '2019-01-02', '110');
 insert into Customer (customer_id, name, visited_on, amount) values ('3', 'Jade', '2019-01-03', '120');
@@ -76,4 +77,16 @@ insert into Customer (customer_id, name, visited_on, amount) values ('9', 'Jaze'
 insert into Customer (customer_id, name, visited_on, amount) values ('1', 'Jhon', '2019-01-10', '130');
 insert into Customer (customer_id, name, visited_on, amount) values ('3', 'Jade', '2019-01-10', '150');
 
--- Query
+-- TODO Query
+with CustomerWindow as (
+    select visited_on,
+        sum(amount) over (order by visited_on rows between 6 preceding and current row) as amount,
+        avg(amount) over (order by visited_on rows between 6 preceding and current row) as average_amount
+    from Customer
+)
+select visited_on,
+    amount,
+    round(average_amount, 2)
+from CustomerWindow
+order by visited_on;
+    
