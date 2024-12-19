@@ -64,29 +64,46 @@ Explanation:
 
 -- Create table Customer
 Create table If Not Exists Customer (customer_id int, name varchar(20), visited_on date, amount int);
-delete from Customer;
-insert into Customer (customer_id, name, visited_on, amount) values ('1', 'Jhon', '2019-01-01', '100');
-insert into Customer (customer_id, name, visited_on, amount) values ('2', 'Daniel', '2019-01-02', '110');
-insert into Customer (customer_id, name, visited_on, amount) values ('3', 'Jade', '2019-01-03', '120');
-insert into Customer (customer_id, name, visited_on, amount) values ('4', 'Khaled', '2019-01-04', '130');
-insert into Customer (customer_id, name, visited_on, amount) values ('5', 'Winston', '2019-01-05', '110');
-insert into Customer (customer_id, name, visited_on, amount) values ('6', 'Elvis', '2019-01-06', '140');
-insert into Customer (customer_id, name, visited_on, amount) values ('7', 'Anna', '2019-01-07', '150');
-insert into Customer (customer_id, name, visited_on, amount) values ('8', 'Maria', '2019-01-08', '80');
-insert into Customer (customer_id, name, visited_on, amount) values ('9', 'Jaze', '2019-01-09', '110');
-insert into Customer (customer_id, name, visited_on, amount) values ('1', 'Jhon', '2019-01-10', '130');
-insert into Customer (customer_id, name, visited_on, amount) values ('3', 'Jade', '2019-01-10', '150');
+truncate table Customer;
+insert into Customer values
+('1', 'Jhon', '2019-01-01', '100'),
+('2', 'Daniel', '2019-01-02', '110'),
+('3', 'Jade', '2019-01-03', '120'),
+('4', 'Khaled', '2019-01-04', '130'),
+('5', 'Winston', '2019-01-05', '110'),
+('6', 'Elvis', '2019-01-06', '140'),
+('7', 'Anna', '2019-01-07', '150'),
+('8', 'Maria', '2019-01-08', '80'),
+('9', 'Jaze', '2019-01-09', '110'),
+('1', 'Jhon', '2019-01-10', '130'),
+('3', 'Jade', '2019-01-10', '150');
 
--- TODO Query
-with CustomerWindow as (
-    select visited_on,
-        sum(amount) over (order by visited_on rows between 6 preceding and current row) as amount,
-        avg(amount) over (order by visited_on rows between 6 preceding and current row) as average_amount
-    from Customer
+
+-- Solution (PostgreSQL)
+with DayilyAmount as (
+	select visited_on,
+		min(visited_on) as min_visited_on,
+		sum(amount) as daily_amount
+	from Customer
+	group by visited_on
+), MovingAverage as (
+	select visited_on,
+		sum(daily_amount) over (order by visited_on rows between 6 preceding and current row) as total_amount,
+		round(avg(daily_amount) over (order by visited_on rows between 6 preceding and current row), 2) as average_amount
+	from DayilyAmount
 )
 select visited_on,
-    amount,
-    round(average_amount, 2)
-from CustomerWindow
-order by visited_on;
+	total_amount as amount,
+	average_amount
+from MovingAverage
+where visited_on >= (select min(visited_on) + interval '6 days' from Customer);
+
+
+-- Another Solution (PostgreSQL)
+select visited_on,
+	sum(sum(amount)) over (order by visited_on range between '6 days' preceding and current row) as amount,
+	round(avg(sum(amount)) over (order by visited_on range between '6 days' preceding and current row), 2) as average_amount
+from Customer
+group by visited_on
+offset 6;
     
